@@ -1,0 +1,35 @@
+{% extends "student/base.html" %}
+
+{% block title %}Student Detail – EduPortal{% endblock %}
+{% block page_title %}Student Details{% endblock %}
+{% block nav_students %}active{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:560px;">
+    <div class="card-header">
+        <h3>🎓 {{ student.first_name }} {{ student.last_name }}</h3>
+        <code class="roll-badge">{{ student.roll_number }}</code>
+    </div>
+
+    <div class="profile-info">
+        <div class="profile-row">
+            <span class="profile-label">Email</span>
+            <span>{{ student.email }}</span>
+        </div>
+        <div class="profile-row">
+            <span class="profile-label">Enrollment Date</span>
+            <span>{{ student.enrollment_date|default:"Not set" }}</span>
+        </div>
+    </div>
+
+    <div class="form-actions" style="margin-top:24px;">
+        <a class="btn" href="{% url 'student-list' %}">← Back</a>
+        {% if user.profile.can_edit %}
+        <a class="btn btn-primary" href="{% url 'student-update' student.pk %}">Edit</a>
+        {% endif %}
+        {% if user.profile.can_delete %}
+        <a class="btn btn-danger-outline" href="{% url 'student-delete' student.pk %}">Delete</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

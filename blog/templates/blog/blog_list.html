@@ -1,0 +1,122 @@
+{% extends "student/base.html" %}
+
+{% block title %}Blog – EduPortal{% endblock %}
+{% block page_title %}Blog{% endblock %}
+{% block nav_blog %}active{% endblock %}
+
+{% block content %}
+
+<!-- ── Header bar ── -->
+<div class="blog-header">
+    <div>
+        <h2 class="blog-heading">📰 Latest Posts</h2>
+        <p class="text-muted">{{ total_posts }} post{{ total_posts|pluralize }} available</p>
+    </div>
+    {% if user.profile.can_edit %}
+    <div style="display:flex;gap:10px;">
+        <a href="{% url 'blog-my-posts' %}" class="btn">My Posts</a>
+        <a href="{% url 'blog-create' %}" class="btn btn-primary" id="new-post-btn">✏️ New Post</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ── Search + Category filters ── -->
+<div class="blog-filters">
+    <form method="get" class="search-bar" id="blog-search-form">
+        {% if current_cat %}<input type="hidden" name="cat" value="{{ current_cat }}">{% endif %}
+        <input type="text" name="q" value="{{ search_query }}" placeholder="Search posts…" class="search-input"
+            id="blog-search-input">
+        <button type="submit" class="btn btn-primary" id="blog-search-btn">🔍</button>
+        {% if search_query %}<a href="?{% if current_cat %}cat={{ current_cat }}{% endif %}" class="btn">✕ Clear</a>{%
+        endif %}
+    </form>
+
+    <div class="cat-pills">
+        <a href="?{% if search_query %}q={{ search_query }}{% endif %}"
+            class="cat-pill {% if not current_cat %}active{% endif %}">All</a>
+        {% for cat in categories %}
+        <a href="?cat={{ cat.slug }}{% if search_query %}&q={{ search_query }}{% endif %}"
+            class="cat-pill {% if current_cat == cat.slug %}active{% endif %}">
+            {{ cat.name }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ── Post grid ── -->
+{% if posts %}
+<div class="blog-grid">
+    {% for post in posts %}
+    <article class="blog-card" style="--cover: {{ post.cover_color }};">
+        <!-- Coloured cover banner -->
+        <div class="blog-card-cover">
+            <span class="blog-card-initial">{{ post.title|first|upper }}</span>
+            {% if post.category %}
+            <span class="blog-cat-tag">{{ post.category.name }}</span>
+            {% endif %}
+            {% if post.status == 'draft' %}
+            <span class="draft-badge">Draft</span>
+            {% endif %}
+        </div>
+
+        <div class="blog-card-body">
+            <h3 class="blog-card-title">
+                <a href="{% url 'blog-detail' post.slug %}">{{ post.title }}</a>
+            </h3>
+            {% if post.excerpt %}
+            <p class="blog-card-excerpt">{{ post.excerpt|truncatewords:18 }}</p>
+            {% else %}
+            <p class="blog-card-excerpt">{{ post.body|truncatewords:18 }}</p>
+            {% endif %}
+
+            <div class="blog-card-meta">
+                <div class="blog-card-author">
+                    <span class="mini-avatar">{{ post.author.username|first|upper }}</span>
+                    <span>{{ post.author.get_full_name|default:post.author.username }}</span>
+                </div>
+                <div class="blog-card-stats">
+                    <span title="Reading time">⏱ {{ post.reading_time }} min</span>
+                    <span title="Comments">💬 {{ post.comments.count }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="blog-card-footer">
+            <a href="{% url 'blog-detail' post.slug %}" class="btn btn-primary btn-sm">Read →</a>
+            {% if user.profile.can_edit %}
+            {% if user.profile.is_admin or post.author == user %}
+            <a href="{% url 'blog-edit' post.slug %}" class="btn btn-sm">Edit</a>
+            <a href="{% url 'blog-delete' post.slug %}" class="btn btn-sm btn-danger">Delete</a>
+            {% endif %}
+            {% endif %}
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="pagination-bar">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if current_cat %}&cat={{ current_cat }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+        class="btn btn-sm">← Previous</a>
+    {% endif %}
+    <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if current_cat %}&cat={{ current_cat }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+        class="btn btn-sm">Next →</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+    <span class="empty-icon">📝</span>
+    <p>No posts found{% if search_query %} for "<strong>{{ search_query }}</strong>"{% endif %}.</p>
+    {% if user.profile.can_edit %}
+    <a href="{% url 'blog-create' %}" class="btn btn-primary" style="margin-top:12px;">Create the first post</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

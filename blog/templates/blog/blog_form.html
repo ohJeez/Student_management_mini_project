@@ -1,0 +1,123 @@
+{% extends "student/base.html" %}
+
+{% block title %}{{ action }} Post – EduPortal{% endblock %}
+{% block page_title %}{{ action }} Blog Post{% endblock %}
+{% block nav_blog %}active{% endblock %}
+
+{% block content %}
+<div class="blog-form-layout">
+
+    <!-- ── Main form ── -->
+    <div class="card blog-form-card">
+        <div class="card-header">
+            <h3>{% if action == 'Edit' %}✏️ Edit Post{% else %}✍️ Write New Post{% endif %}</h3>
+        </div>
+        <form method="post" novalidate id="blog-post-form">
+            {% csrf_token %}
+
+            <!-- Title -->
+            <div class="form-group">
+                {{ form.title }}
+                <label for="id_title">Post Title</label>
+                {% for err in form.title.errors %}<p class="field-error">{{ err }}</p>{% endfor %}
+            </div>
+
+            <!-- Excerpt -->
+            <div class="form-group">
+                {{ form.excerpt }}
+                <label for="id_excerpt">Short Excerpt (optional)</label>
+                {% for err in form.excerpt.errors %}<p class="field-error">{{ err }}</p>{% endfor %}
+            </div>
+
+            <!-- Body -->
+            <div class="form-group">
+                <label class="select-label" style="margin-bottom:8px;">Content</label>
+                {{ form.body }}
+                {% for err in form.body.errors %}<p class="field-error">{{ err }}</p>{% endfor %}
+                <p class="text-muted" style="font-size:.78rem;margin-top:4px;">
+                    Tip: separate paragraphs with a blank line.
+                </p>
+            </div>
+
+            <!-- Category + new category inline -->
+            <div class="form-grid-2">
+                <div class="form-group-select">
+                    <label class="select-label">Category</label>
+                    {{ form.category }}
+                    {% for err in form.category.errors %}<p class="field-error">{{ err }}</p>{% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ form.new_category }}
+                    <label for="id_new_category">Or create new category</label>
+                    {% for err in form.new_category.errors %}<p class="field-error">{{ err }}</p>{% endfor %}
+                </div>
+            </div>
+
+            <!-- Status + cover colour -->
+            <div class="form-grid-2">
+                <div class="form-group-select">
+                    <label class="select-label">Status</label>
+                    {{ form.status }}
+                    {% for err in form.status.errors %}<p class="field-error">{{ err }}</p>{% endfor %}
+                </div>
+                <div class="cover-color-group">
+                    <label class="select-label">Cover Colour</label>
+                    <div class="cover-color-row">
+                        {{ form.cover_color }}
+                        <div class="color-preview" id="color-preview"></div>
+                        <span class="text-muted" style="font-size:.82rem;" id="color-hex-label"></span>
+                    </div>
+                    {% for err in form.cover_color.errors %}<p class="field-error">{{ err }}</p>{% endfor %}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="submit-btn" id="blog-submit-btn">
+                    {% if action == 'Edit' %}Save Changes{% else %}Publish Post{% endif %}
+                </button>
+                <a href="{% url 'blog-list' %}" class="btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- ── Live preview sidebar ── -->
+    <div class="blog-preview-panel card">
+        <h4 class="sidebar-widget-title">👁️ Live Preview</h4>
+        <div class="preview-cover" id="preview-cover">
+            <span class="blog-card-initial" id="preview-initial">T</span>
+        </div>
+        <p class="preview-title" id="preview-title">Your title appears here</p>
+        <p class="preview-excerpt text-muted" id="preview-excerpt">Excerpt preview…</p>
+    </div>
+</div>
+
+<script>
+    // ── Live preview ────────────────────────────────────────
+    const titleInput = document.getElementById('id_title');
+    const excerptInput = document.getElementById('id_excerpt');
+    const colorInput = document.getElementById('id_cover_color');
+    const preview = document.getElementById('preview-cover');
+    const previewTitle = document.getElementById('preview-title');
+    const previewExcerpt = document.getElementById('preview-excerpt');
+    const previewInitial = document.getElementById('preview-initial');
+    const colorPreview = document.getElementById('color-preview');
+    const colorHexLabel = document.getElementById('color-hex-label');
+
+    function updatePreview() {
+        const title = titleInput ? titleInput.value : '';
+        const exc = excerptInput ? excerptInput.value : '';
+        const color = colorInput ? colorInput.value : '#4f63d2';
+        if (previewTitle) previewTitle.textContent = title || 'Your title appears here';
+        if (previewInitial) previewInitial.textContent = title ? title[0].toUpperCase() : 'T';
+        if (previewExcerpt) previewExcerpt.textContent = exc || 'Excerpt preview…';
+        if (preview) preview.style.background = `linear-gradient(135deg, ${color}, ${color}aa)`;
+        if (colorPreview) colorPreview.style.background = color;
+        if (colorHexLabel) colorHexLabel.textContent = color;
+    }
+
+    [titleInput, excerptInput, colorInput].forEach(el => {
+        if (el) el.addEventListener('input', updatePreview);
+    });
+    updatePreview();
+</script>
+{% endblock %}

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Student App{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'student/style.css' %}">
+</head>
+
+<body>
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-logo">🎓</span>
+            <span class="sidebar-title">EduPortal</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <p class="nav-section-label">Navigation</p>
+            <a href="{% url 'student-list' %}" class="nav-link {% block nav_students %}{% endblock %}">
+                <span class="nav-icon">👥</span> Students
+            </a>
+
+            {% if user.is_authenticated and user.profile.can_edit %}
+            <a href="{% url 'student-create' %}" class="nav-link {% block nav_add %}{% endblock %}">
+                <span class="nav-icon">➕</span> Add Student
+            </a>
+            {% endif %}
+
+            <a href="{% url 'feedback-submit' %}" class="nav-link {% block nav_feedback %}{% endblock %}">
+                <span class="nav-icon">💬</span> Submit Feedback
+            </a>
+
+            <p class="nav-section-label">Blog</p>
+            <a href="{% url 'blog-list' %}" class="nav-link {% block nav_blog %}{% endblock %}">
+                <span class="nav-icon">📰</span> Blog
+            </a>
+            {% if user.is_authenticated and user.profile.can_edit %}
+            <a href="{% url 'blog-create' %}" class="nav-link {% block nav_blog_new %}{% endblock %}">
+                <span class="nav-icon">✏️</span> New Post
+            </a>
+            <a href="{% url 'blog-my-posts' %}" class="nav-link {% block nav_blog_mine %}{% endblock %}">
+                <span class="nav-icon">📝</span> My Posts
+            </a>
+            {% endif %}
+
+            {% if user.is_authenticated and user.profile.can_manage_users %}
+            <p class="nav-section-label">Admin</p>
+            <a href="{% url 'user-list' %}" class="nav-link {% block nav_users %}{% endblock %}">
+                <span class="nav-icon">🔑</span> Manage Users
+            </a>
+            <a href="{% url 'user-create' %}" class="nav-link {% block nav_add_user %}{% endblock %}">
+                <span class="nav-icon">👤</span> Add User
+            </a>
+            <a href="{% url 'feedback-list' %}" class="nav-link {% block nav_feedback_admin %}{% endblock %}">
+                <span class="nav-icon">📬</span> Feedback Inbox
+            </a>
+            {% endif %}
+        </nav>
+
+        <div class="sidebar-footer">
+            {% if user.is_authenticated %}
+            <div class="user-info">
+                <div class="user-avatar">{{ user.username|first|upper }}</div>
+                <div class="user-details">
+                    <p class="user-name">{{ user.get_full_name|default:user.username }}</p>
+                    <span class="role-badge role-{{ user.profile.role }}">
+                        {{ user.profile.get_role_display }}
+                    </span>
+                </div>
+            </div>
+            <a href="{% url 'profile' %}" class="nav-link">
+                <span class="nav-icon">⚙️</span> Profile
+            </a>
+            <a href="#" id="theme-toggle" class="nav-link">
+                <span class="nav-icon">🌙</span> <span id="theme-label">Dark Mode</span>
+            </a>
+            <a href="{% url 'logout' %}" class="nav-link nav-link--danger">
+                <span class="nav-icon">🚪</span> Logout
+            </a>
+            {% else %}
+            <a href="{% url 'login' %}" class="nav-link">
+                <span class="nav-icon">🔐</span> Login
+            </a>
+            {% endif %}
+        </div>
+    </aside>
+
+    <!-- ── Main content ── -->
+    <div class="main-content">
+        <header class="topbar">
+            <button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebar-toggle-btn"
+                aria-label="Toggle menu">☰</button>
+            <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+            {% if user.is_authenticated %}
+            <div class="topbar-user">
+                <span>Hello, <strong>{{ user.get_full_name|default:user.username }}</strong></span>
+            </div>
+            {% endif %}
+        </header>
+
+        <!-- Flash messages -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <main class="page-body">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script>
+        // Sidebar toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+        // Theme toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeLabel = document.getElementById('theme-label');
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            if (themeLabel) themeLabel.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+        }
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        setTheme(savedTheme);
+        if (themeToggle) {
+            themeToggle.addEventListener('click', function (e) {
+                e.preventDefault();
+                const current = document.documentElement.getAttribute('data-theme');
+                setTheme(current === 'dark' ? 'light' : 'dark');
+            });
+        }
+        // Auto-dismiss alerts
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(el => {
+                el.style.transition = 'opacity 0.5s';
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 500);
+            });
+        }, 4000);
+    </script>
+</body>
+
+</html>

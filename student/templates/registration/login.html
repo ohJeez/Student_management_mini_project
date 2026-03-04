@@ -1,0 +1,9 @@
+{% comment %}
+This template is no longer the primary login page.
+The login is now served from accounts/templates/accounts/login.html.
+This file is kept as a fallback redirect.
+{% endcomment %}
+{% extends "student/base.html" %}
+{% block content %}
+<script>window.location = "{% url 'login' %}";</script>
+{% endblock %}

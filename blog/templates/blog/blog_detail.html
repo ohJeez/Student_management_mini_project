@@ -1,0 +1,144 @@
+{% extends "student/base.html" %}
+
+{% block title %}{{ post.title }} – EduPortal{% endblock %}
+{% block page_title %}Blog Post{% endblock %}
+{% block nav_blog %}active{% endblock %}
+
+{% block content %}
+<div class="blog-detail-layout">
+
+    <!-- ── Main article ── -->
+    <article class="blog-article card">
+
+        <!-- Cover banner -->
+        <div class="blog-detail-cover"
+            style="background: linear-gradient(135deg, {{ post.cover_color }}, {{ post.cover_color }}aa);">
+            <div class="blog-detail-cover-inner">
+                {% if post.category %}
+                <span class="blog-cat-tag">{{ post.category.name }}</span>
+                {% endif %}
+                {% if post.status == 'draft' %}
+                <span class="draft-badge">Draft – not published</span>
+                {% endif %}
+                <h1 class="blog-detail-title">{{ post.title }}</h1>
+                <div class="blog-detail-byline">
+                    <span class="mini-avatar">{{ post.author.username|first|upper }}</span>
+                    <span>
+                        By <strong>{{ post.author.get_full_name|default:post.author.username }}</strong>
+                        &nbsp;·&nbsp;
+                        {% if post.published_at %}
+                        {{ post.published_at|date:"M j, Y" }}
+                        {% else %}
+                        {{ post.created_at|date:"M j, Y" }}
+                        {% endif %}
+                        &nbsp;·&nbsp; ⏱ {{ post.reading_time }} min read
+                        &nbsp;·&nbsp; 💬 {{ post.comments.count }} comment{{ post.comments.count|pluralize }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Author actions -->
+        {% if user.profile.can_edit %}
+        {% if user.profile.is_admin or post.author == user %}
+        <div class="blog-post-actions">
+            <a href="{% url 'blog-edit' post.slug %}" class="btn btn-sm">✏️ Edit Post</a>
+            <a href="{% url 'blog-delete' post.slug %}" class="btn btn-sm btn-danger">🗑️ Delete</a>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <!-- Body -->
+        <div class="blog-body">
+            {{ post.body|linebreaks }}
+        </div>
+    </article>
+
+    <!-- ── Sidebar ── -->
+    <aside class="blog-sidebar">
+
+        <!-- Related posts -->
+        {% if related_posts %}
+        <div class="card">
+            <h4 class="sidebar-widget-title">📚 Related Posts</h4>
+            <ul class="related-list">
+                {% for rp in related_posts %}
+                <li>
+                    <a href="{% url 'blog-detail' rp.slug %}" class="related-link">
+                        <span class="related-dot" style="background:{{ rp.cover_color }};"></span>
+                        {{ rp.title|truncatechars:48 }}
+                    </a>
+                    <p class="text-muted" style="font-size:.78rem;margin:2px 0 0 18px;">
+                        ⏱ {{ rp.reading_time }} min
+                    </p>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- About author -->
+        <div class="card author-card">
+            <h4 class="sidebar-widget-title">✍️ About the Author</h4>
+            <div class="author-info">
+                <div class="user-avatar" style="width:48px;height:48px;font-size:1.3rem;">
+                    {{ post.author.username|first|upper }}
+                </div>
+                <div>
+                    <p style="font-weight:600;">{{ post.author.get_full_name|default:post.author.username }}</p>
+                    <span class="role-badge role-{{ post.author.profile.role }}">
+                        {{ post.author.profile.get_role_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <a href="{% url 'blog-list' %}" class="btn" style="width:100%;justify-content:center;">← All Posts</a>
+    </aside>
+</div>
+
+<!-- ── Comments section ── -->
+<div class="card blog-comments-card">
+    <h3 class="comments-heading">💬 Comments
+        <span class="unread-badge" style="background:var(--primary);">{{ post.comments.count }}</span>
+    </h3>
+
+    {% if comments %}
+    <div class="comments-list">
+        {% for c in comments %}
+        <div class="comment-item">
+            <div class="comment-header">
+                <span class="mini-avatar">{{ c.author.username|first|upper }}</span>
+                <div>
+                    <strong>{{ c.author.get_full_name|default:c.author.username }}</strong>
+                    <span class="role-badge role-{{ c.author.profile.role }}">{{ c.author.profile.get_role_display
+                        }}</span>
+                    <span class="text-muted" style="font-size:.78rem;margin-left:8px;">{{ c.created_at|date:"M j, Y H:i"
+                        }}</span>
+                </div>
+            </div>
+            <p class="comment-body">{{ c.body|linebreaksbr }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted" style="padding:12px 0;">No comments yet. Be the first!</p>
+    {% endif %}
+
+    <!-- Comment form -->
+    <div class="add-comment">
+        <h4 style="margin-bottom:14px;">Leave a Comment</h4>
+        <form method="post" id="comment-form">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ comment_form.body }}
+                {% for err in comment_form.body.errors %}
+                <p class="field-error">{{ err }}</p>
+                {% endfor %}
+            </div>
+            <button type="submit" class="submit-btn" id="submit-comment-btn">Post Comment 💬</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

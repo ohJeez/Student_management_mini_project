@@ -1,0 +1,121 @@
+{% extends "student/base.html" %}
+
+{% block title %}Submit Feedback – EduPortal{% endblock %}
+{% block page_title %}Feedback{% endblock %}
+{% block nav_feedback %}active{% endblock %}
+
+{% block content %}
+<div class="feedback-layout">
+
+    <!-- ── Submission form ── -->
+    <div class="card feedback-form-card">
+        <div class="card-header">
+            <h3>💬 Share Your Feedback</h3>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate id="feedback-form">
+            {% csrf_token %}
+
+            <div class="form-group">
+                {{ form.subject }}
+                <label for="id_subject">Subject</label>
+                {% for err in form.subject.errors %}<p class="field-error">{{ err }}</p>{% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form.message }}
+                <label for="id_message">Your Message</label>
+                {% for err in form.message.errors %}<p class="field-error">{{ err }}</p>{% endfor %}
+            </div>
+
+            <!-- Star rating UI -->
+            <div class="star-rating-group">
+                <p class="select-label">Rating (optional)</p>
+                <div class="star-picker" id="star-picker">
+                    {% for val, label in form.rating.field.choices %}
+                    {% if val %}
+                    <button type="button" class="star-btn" data-val="{{ val }}" title="{{ label }}">★</button>
+                    {% endif %}
+                    {% endfor %}
+                    <span class="star-hint" id="star-hint">Click to rate</span>
+                </div>
+                <!-- Hidden select keeps the actual value -->
+                <div style="display:none;">{{ form.rating }}</div>
+                {% for err in form.rating.errors %}<p class="field-error">{{ err }}</p>{% endfor %}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="submit-btn" id="feedback-submit-btn">
+                    Send Feedback ✉️
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ── My recent submissions ── -->
+    <div class="card feedback-history-card">
+        <div class="card-header">
+            <h3>🕑 My Recent Submissions</h3>
+        </div>
+        {% if my_feedbacks %}
+        <ul class="feedback-history-list">
+            {% for fb in my_feedbacks %}
+            <li class="feedback-history-item">
+                <div class="fh-top">
+                    <strong>{{ fb.subject }}</strong>
+                    {% if fb.rating %}
+                    <span class="star-display">
+                        {% for i in "12345" %}{% if forloop.counter <= fb.rating %}★{% else %}☆{% endif %}{% endfor %}
+                            </span>
+                            {% endif %}
+                </div>
+                <p class="fh-msg">{{ fb.message|truncatewords:15 }}</p>
+                <p class="fh-date text-muted">{{ fb.submitted_at|date:"M j, Y – H:i" }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted" style="padding:10px 0;">You haven't submitted any feedback yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+    // ── Interactive star picker ─────────────────────────────────
+    const stars = document.querySelectorAll('.star-btn');
+    const hidden = document.getElementById('id_rating');
+    const hint = document.getElementById('star-hint');
+    const labels = ['Terrible', 'Poor', 'Okay', 'Good', 'Excellent'];
+    let selected = 0;
+
+    function paintStars(upTo) {
+        stars.forEach((s, i) => {
+            s.classList.toggle('lit', i < upTo);
+        });
+    }
+
+    stars.forEach((star, idx) => {
+        star.addEventListener('mouseenter', () => {
+            paintStars(idx + 1);
+            hint.textContent = labels[idx];
+        });
+        star.addEventListener('mouseleave', () => {
+            paintStars(selected);
+            hint.textContent = selected ? labels[selected - 1] : 'Click to rate';
+        });
+        star.addEventListener('click', () => {
+            selected = idx + 1;
+            if (hidden) hidden.value = selected;
+            paintStars(selected);
+            hint.textContent = labels[selected - 1];
+        });
+    });
+</script>
+{% endblock %}

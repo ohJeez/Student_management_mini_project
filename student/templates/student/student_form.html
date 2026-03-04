@@ -1,0 +1,29 @@
+{% extends "student/base.html" %}
+
+{% block title %}{{ action }} Student – EduPortal{% endblock %}
+{% block page_title %}{{ action }} Student{% endblock %}
+{% block nav_add %}active{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:520px;">
+    <div class="card-header">
+        <h3>{{ action }} Student</h3>
+    </div>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+            {{ field }}
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {% for err in field.errors %}<p class="field-error">{{ err }}</p>{% endfor %}
+        </div>
+        {% endfor %}
+        <div class="form-actions">
+            <button type="submit" class="submit-btn" id="student-form-submit">
+                {% if action == 'Edit' %}Save Changes{% else %}Add Student{% endif %}
+            </button>
+            <a class="btn" href="{% url 'student-list' %}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

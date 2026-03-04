@@ -1,0 +1,23 @@
+{% extends "student/base.html" %}
+
+{% block title %}Delete Post – EduPortal{% endblock %}
+{% block page_title %}Delete Post{% endblock %}
+
+{% block content %}
+<div class="card danger-card" style="max-width:500px;">
+    <h3>⚠️ Delete Post</h3>
+    <p style="margin:14px 0;">Are you sure you want to permanently delete
+        <strong>"{{ post.title }}"</strong>?<br>
+        All comments on this post will also be deleted. This cannot be undone.
+    </p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" class="submit-btn btn-danger-solid" id="confirm-delete-post-btn">
+                Yes, Delete
+            </button>
+            <a href="{% url 'blog-detail' post.slug %}" class="btn">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

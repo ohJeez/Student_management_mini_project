@@ -1,0 +1,21 @@
+{% extends "student/base.html" %}
+
+{% block title %}Delete User – EduPortal{% endblock %}
+{% block page_title %}Delete User{% endblock %}
+
+{% block content %}
+<div class="card danger-card" style="max-width:480px;">
+    <h3>⚠️ Confirm Deletion</h3>
+    <p>Are you sure you want to permanently delete user <strong>{{ target_user.username }}</strong>?
+        This action cannot be undone.</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions" style="margin-top:20px;">
+            <button type="submit" class="submit-btn btn-danger-solid" id="confirm-delete-user-btn">
+                Yes, Delete
+            </button>
+            <a href="{% url 'user-list' %}" class="btn">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

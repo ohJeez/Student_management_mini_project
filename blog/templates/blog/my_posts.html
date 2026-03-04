@@ -1,0 +1,58 @@
+{% extends "student/base.html" %}
+
+{% block title %}My Posts – EduPortal{% endblock %}
+{% block page_title %}My Posts{% endblock %}
+{% block nav_blog %}active{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3>📝 My Posts</h3>
+        <a href="{% url 'blog-create' %}" class="btn btn-primary" id="create-post-btn">✏️ New Post</a>
+    </div>
+
+    {% if posts %}
+    <table class="table" id="my-posts-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Reading Time</th>
+                <th>Comments</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in posts %}
+            <tr>
+                <td><strong><a href="{% url 'blog-detail' post.slug %}">{{ post.title }}</a></strong></td>
+                <td>{{ post.category.name|default:"—" }}</td>
+                <td>
+                    {% if post.status == 'published' %}
+                    <span class="role-badge role-viewer">Published</span>
+                    {% else %}
+                    <span class="role-badge role-staff">Draft</span>
+                    {% endif %}
+                </td>
+                <td>⏱ {{ post.reading_time }} min</td>
+                <td>💬 {{ post.comments.count }}</td>
+                <td class="text-muted" style="font-size:.85rem;">{{ post.created_at|date:"M j, Y" }}</td>
+                <td>
+                    <a href="{% url 'blog-edit' post.slug %}" class="btn btn-sm">Edit</a>
+                    <a href="{% url 'blog-delete' post.slug %}" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <span class="empty-icon">✍️</span>
+        <p>You haven't written any posts yet.</p>
+        <a href="{% url 'blog-create' %}" class="btn btn-primary" style="margin-top:12px;">Write your first post</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "student/base.html" %}
+
+{% block title %}Manage Users – EduPortal{% endblock %}
+{% block page_title %}User Management{% endblock %}
+{% block nav_users %}active{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3>🔑 All Users</h3>
+        <a href="{% url 'user-create' %}" class="btn btn-primary" id="add-user-btn">➕ Add User</a>
+    </div>
+
+    <table class="table" id="user-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td><strong>{{ u.username }}</strong></td>
+                <td>{{ u.get_full_name|default:"–" }}</td>
+                <td>{{ u.email|default:"–" }}</td>
+                <td>
+                    <span class="role-badge role-{{ u.profile.role }}">
+                        {{ u.profile.get_role_display }}
+                    </span>
+                </td>
+                <td>
+                    <a class="btn btn-sm" href="{% url 'user-edit' u.pk %}">Edit</a>
+                    {% if u != request.user %}
+                    <a class="btn btn-sm btn-danger" href="{% url 'user-delete' u.pk %}">Delete</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align:center;">No users found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

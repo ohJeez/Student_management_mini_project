@@ -1,0 +1,79 @@
+{% extends "student/base.html" %}
+
+{% block title %}All Feedback – EduPortal{% endblock %}
+{% block page_title %}Feedback Inbox{% endblock %}
+{% block nav_feedback_admin %}active{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3>📬 Feedback Inbox
+            {% if unread_count %}
+            <span class="unread-badge">{{ unread_count }} unread</span>
+            {% endif %}
+        </h3>
+        <!-- Filter tabs -->
+        <div class="filter-tabs">
+            <a href="?filter=all" class="filter-tab {% if current_filter == 'all'    %}active{% endif %}">All</a>
+            <a href="?filter=unread" class="filter-tab {% if current_filter == 'unread' %}active{% endif %}">Unread</a>
+            <a href="?filter=read" class="filter-tab {% if current_filter == 'read'   %}active{% endif %}">Read</a>
+        </div>
+    </div>
+
+    {% if feedbacks %}
+    <div class="feedback-inbox-list">
+        {% for fb in feedbacks %}
+        <div class="feedback-inbox-item {% if not fb.is_read %}unread{% endif %}" id="fb-{{ fb.pk }}">
+            <div class="fi-header">
+                <div class="fi-meta">
+                    <div class="user-avatar-sm">{{ fb.user.username|first|upper }}</div>
+                    <div>
+                        <strong>{{ fb.user.get_full_name|default:fb.user.username }}</strong>
+                        <span class="text-muted" style="font-size:.8rem;">@{{ fb.user.username }}</span>
+                        <span class="role-badge role-{{ fb.user.profile.role }}">{{ fb.user.profile.get_role_display
+                            }}</span>
+                    </div>
+                </div>
+                <div class="fi-right">
+                    {% if fb.rating %}
+                    <span class="star-display" title="{{ fb.rating }} out of 5">
+                        {% for i in "12345" %}{% if forloop.counter <= fb.rating %}★{% else %}☆{% endif %}{% endfor %}
+                            </span>
+                            {% endif %}
+                            <span class="fi-date text-muted">{{ fb.submitted_at|date:"M j, Y H:i" }}</span>
+                            <a href="{% url 'feedback-mark-read' fb.pk %}"
+                                class="btn btn-sm {% if fb.is_read %}btn-read{% endif %}"
+                                title="{% if fb.is_read %}Mark as unread{% else %}Mark as read{% endif %}">
+                                {% if fb.is_read %}✓ Read{% else %}● Unread{% endif %}
+                            </a>
+                </div>
+            </div>
+            <p class="fi-subject">{{ fb.subject }}</p>
+            <p class="fi-message">{{ fb.message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="pagination-bar">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&filter={{ current_filter }}" class="btn btn-sm">←
+            Previous</a>
+        {% endif %}
+        <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&filter={{ current_filter }}" class="btn btn-sm">Next →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+        <span class="empty-icon">📭</span>
+        <p>No feedback found for this filter.</p>
+        <a href="?filter=all" class="btn btn-primary">Show All</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

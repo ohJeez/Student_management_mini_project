@@ -1,0 +1,47 @@
+{% extends "student/base.html" %}
+
+{% block title %}Edit User – EduPortal{% endblock %}
+{% block page_title %}Edit User{% endblock %}
+{% block nav_users %}active{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:520px;">
+    <div class="card-header">
+        <h3>✏️ Edit: {{ target_user.username }}</h3>
+    </div>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-grid-2">
+            <div class="form-group">
+                {{ form.first_name }}
+                <label for="{{ form.first_name.id_for_label }}">First Name</label>
+                {% for err in form.first_name.errors %}<p class="field-error">{{ err }}</p>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.last_name }}
+                <label for="{{ form.last_name.id_for_label }}">Last Name</label>
+                {% for err in form.last_name.errors %}<p class="field-error">{{ err }}</p>{% endfor %}
+            </div>
+        </div>
+        <div class="form-group">
+            {{ form.username }}
+            <label for="{{ form.username.id_for_label }}">Username</label>
+            {% for err in form.username.errors %}<p class="field-error">{{ err }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.email }}
+            <label for="{{ form.email.id_for_label }}">Email Address</label>
+            {% for err in form.email.errors %}<p class="field-error">{{ err }}</p>{% endfor %}
+        </div>
+        <div class="form-group-select">
+            <label class="select-label">Role</label>
+            {{ form.role }}
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="submit-btn" id="edit-user-btn">Save Changes</button>
+            <a href="{% url 'user-list' %}" class="btn">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
